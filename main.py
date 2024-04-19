@@ -69,20 +69,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 
 app = FastAPI()
-john_doe_profile = {
-    "name": "John Doe",
-    "email": "johndoe@example.com",
-    "address": {
-        "street": "123 Main St",
-        "city": "Anytown",
-        "state": "Anystate",
-        "zip_code": "12345"
-    },
-    "age": 31,
-    "occupation": "Software Engineer",
-    "interests": ["programming", "hiking", "traveling", "reading"],
-    "phone_number": "555-1234"
-}
 
 # Embedded data structured for FastAPI-friendly queries
 directory = {
