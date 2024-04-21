@@ -1,72 +1,6 @@
-'''
 from fastapi import FastAPI, Query, __version__
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
-
-app = FastAPI()
-john_doe_profile = {
-    "name": "John Doe",
-    "email": "johndoe@example.com",
-    "address": {
-        "street": "123 Main St",
-        "city": "Anytown",
-        "state": "Anystate",
-        "zip_code": "12345"
-    },
-    "age": 31,
-    "occupation": "Software Engineer",
-    "interests": ["programming", "hiking", "traveling", "reading"],
-    "phone_number": "555-1234"
-}
-
-
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-html = f"""
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>FastAPI on Vercel</title>
-        <link rel="icon" href="/static/favicon.ico" type="image/x-icon" />
-    </head>
-    <body>
-        <div class="bg-gray-200 p-4 rounded-lg shadow-lg">
-            <h1>Hello from FastAPI@{__version__}</h1>
-            <ul>
-                <li><a href="/docs">/docs</a></li>
-                <li><a href="/redoc">/redoc</a></li>
-            </ul>
-            <p>Powered by <a href="https://vercel.com" target="_blank">Vercel</a></p>
-        </div>
-    </body>
-</html>
-"""
-
-@app.get("/")
-async def root():
-    return HTMLResponse(html)
-
-@app.get('/getProfile_name')
-async def get_profile(name: str = Query(None)):
-    # Check if the email matches John Doe's email, otherwise return a generic message
-    if name.lower() == john_doe_profile["name"].lower():
-        return john_doe_profile
-    else:
-        return {"message": "No profile found for this name"}
-
-@app.get('/getProfile_age')
-async def get_profile(age: int = Query(None)):
-    # Check if the email matches John Doe's email, otherwise return a generic message
-    if age == john_doe_profile["age"]:
-        return john_doe_profile
-    else:
-        return {"message": "No profile found for this age"}
-
-'''
-
-from fastapi import FastAPI, Query, __version__
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 
 app = FastAPI()
 
@@ -177,6 +111,11 @@ directory = {
         "Head of Human Resources": ["J. Dave"],
         "Head of Financial Planning, Analysis & Change": ["B. Langheim"],
         "Internal Audit": ["D. Berney"]
+    },
+    "by_pdf_name":{
+        "Sarasin Food & Agriculture Opportunities - A Acc":["GB00B2Q8L643.pdf"],
+        "Sarasin Global Dividend - A Acc":["GB00BGDF8769.pdf"],
+        "Sarasin Global Equity Real Return - A Acc":["GB00B13GW945.pdf"]
     }
 }
 
@@ -225,3 +164,28 @@ async def get_profile_by_title(title: str = Query(None)):
         return {name: directory["by_name"][name] for name in names}
     else:
         return {"message": "No profiles found with this title"}
+
+@app.get("/download-pdf/{pdf_name}")
+async def download_pdf(pdf_name: str):
+    file_path = f"static/pdfs/{pdf_name}"
+    try:
+        return FileResponse(path=file_path, filename=pdf_name, media_type='application/pdf')
+    except FileNotFoundError:
+        raise {"message": "No Files found"}
+
+@app.get('/getPDF_by_name')
+async def get_pdf_by_name(name: str = Query(None)):
+    # Check if the PDF name exists in the directory
+    name_pdf_list = directory["by_pdf_name"].get(name)
+
+    if not name_pdf_list:
+        raise {"message":"No PDF file found for this name"}
+
+    # Assuming you want to serve the first PDF if there are multiple
+    name_pdf = name_pdf_list[0]
+    file_path = f"static/pdfs/{name_pdf}"
+
+    try:
+        return FileResponse(path=file_path, filename=name_pdf, media_type='application/pdf')
+    except FileNotFoundError:
+        raise {"message":"File Not Found"}
